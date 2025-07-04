@@ -1,6 +1,6 @@
 # Fullstack Developer Take-home Coding Test
 
-## Setup Instructions
+## Setup Instructions for using with prisma.
 
 ### Backend
 
@@ -18,6 +18,30 @@ Prerequisites: Node.js ≥ 18, NPM ≥ 9
 > ⚠️ Make sure your `.env` file exists at the root of the backend project and includes:   
 > `DATABASE_URL="file:./dev.db"`  
 6. Start the development server:   
+`npm run dev`  
+Backend runs at: http://localhost:3000
+
+### Frontend
+
+Prerequisites: Node.js ≥ 18, NPM ≥ 9  
+1. Navigate to the frontend directory:   
+ `cd frontend`  
+2. Install dependencies:  
+`npm install`  
+3. Run the development server:  
+`npm run dev`  
+Frontend runs at: http://localhost:5173
+
+## Setup Instructions for using in memory
+
+### Backend
+
+Prerequisites: Node.js ≥ 18, NPM ≥ 9  
+1. Navigate to the backend directory:   
+`cd backend`  
+2. Install dependencies:  
+`npm install`  
+3. Start the development server:   
 `npm run dev`  
 Backend runs at: http://localhost:3000
 
