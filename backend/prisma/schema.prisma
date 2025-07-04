@@ -29,7 +29,7 @@ model Property {
   id         Int        @id @default(autoincrement())
   address    String
   agentId    Int
-  agent      PropertyAgent @relation(fields: [agentId], references: [id])
+  agent      PropertyAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
   tenants    Tenant[]
   notes      Note[]
   reminders  Reminder[]
@@ -41,7 +41,7 @@ model Tenant {
   email      String
   phone      String
   propertyId Int
-  property   Property   @relation(fields: [propertyId], references: [id])
+  property   Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
 model Note {
@@ -49,7 +49,7 @@ model Note {
   content    String
   createdAt  DateTime   @default(now())
   propertyId Int
-  property   Property   @relation(fields: [propertyId], references: [id])
+  property   Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }
 
 model Reminder {
@@ -58,5 +58,5 @@ model Reminder {
   dueDate     DateTime
   completed   Boolean    @default(false)
   propertyId  Int
-  property    Property   @relation(fields: [propertyId], references: [id])
+  property    Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 }

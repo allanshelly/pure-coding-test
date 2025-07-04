@@ -8,9 +8,6 @@
           <div class="dropdown-content">
             <router-link to="/agents/view">View All</router-link>
             <router-link to="/agents/add">Add Agent</router-link>
-            <router-link to="/agents/delete">Delete Agent</router-link>
-            <router-link to="/agents/update">Update Agent</router-link>
-
           </div>
         </div>
       </div>
