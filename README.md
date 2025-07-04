@@ -230,7 +230,7 @@ Build a full stack application using **TypeScript**. The application should incl
 ## ⏱ Time Limit
 
 - You should spend **no more than 6 hours** on the assignment.
-- Received at 1:31pm
-- Started at 3:19pm
-- Finished at 8:53pm
-"""
+- Received at 1:31pm July 4, 2025
+- Started at 3:19pm July 4, 2025
+- Finished at 8:53pm July 4, 2025
+
