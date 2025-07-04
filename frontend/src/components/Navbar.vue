@@ -7,7 +7,6 @@
           <span class="dropdown-label">Agents</span>
           <div class="dropdown-content">
             <router-link to="/agents/view">View All</router-link>
-            <router-link to="/agents/add">Add Agent</router-link>
           </div>
         </div>
       </div>

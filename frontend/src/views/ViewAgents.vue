@@ -1,35 +1,65 @@
 <template>
   <v-container>
-    <v-card>
-      <v-card-title>Agents</v-card-title>
+    <!-- Header + Add Button -->
+    <v-row align="center" justify="space-between" class="mb-4">
+      <v-col cols="auto">
+        <v-card-title class="text-h5 font-weight-bold">Agents</v-card-title>
+      </v-col>
+      <v-col cols="auto">
+        <v-btn color="primary" @click="addDialog = true">
+          <v-icon start>mdi-plus</v-icon>
+          Add Agent
+        </v-btn>
+      </v-col>
+    </v-row>
 
-      <v-text-field
-        v-model="search"
-        label="Search agents"
-        prepend-inner-icon="mdi-magnify"
-        variant="solo-filled"
-        clearable
-        class="mb-4"
-      />
+    <!-- Search -->
+    <v-text-field
+      v-model="search"
+      label="Search agents"
+      prepend-inner-icon="mdi-magnify"
+      variant="solo-filled"
+      clearable
+      class="mb-4"
+      @click:clear="search=''"
+    />
 
-      <v-data-table
-        :headers="headers"
-        :items="filteredAgents"
-        :items-per-page="10"
-        class="elevation-1"
-      >
-        <template #item.actions="{ item }">
-          <v-btn icon size="small" color="primary" @click="openEditModal(item)">
-            <v-icon size="20">mdi-pencil</v-icon>
-          </v-btn>
-          <v-btn icon size="small" color="error" @click="openDeleteDialog(item.id)">
-            <v-icon size="20">mdi-delete</v-icon>
-          </v-btn>
-        </template>
-      </v-data-table>
-    </v-card>
+    <!-- Table -->
+    <v-data-table
+      :headers="headers"
+      :items="filteredAgents"
+      :items-per-page="10"
+      class="elevation-1"
+    >
+      <template #item.actions="{ item }">
+        <v-btn icon size="small" color="primary" @click="openEditModal(item)">
+          <v-icon size="20">mdi-pencil</v-icon>
+        </v-btn>
+        <v-btn icon size="small" color="error" @click="openDeleteDialog(item.id)">
+          <v-icon size="20">mdi-delete</v-icon>
+        </v-btn>
+      </template>
+    </v-data-table>
 
-    <!-- Edit Modal -->
+    <!-- Add Agent Modal -->
+    <v-dialog v-model="addDialog" max-width="500">
+      <v-card>
+        <v-card-title>Add Agent</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="addForm.firstName" label="First Name" />
+          <v-text-field v-model="addForm.lastName" label="Last Name" />
+          <v-text-field v-model="addForm.email" label="Email" />
+          <v-text-field v-model="addForm.mobileNumber" label="Mobile Number" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="addDialog = false">Cancel</v-btn>
+          <v-btn color="primary" @click="submitAdd">Add</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Edit Agent Modal -->
     <v-dialog v-model="editDialog" max-width="500">
       <v-card>
         <v-card-title>Edit Agent</v-card-title>
@@ -68,29 +98,37 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue'
 
 type Agent = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  mobileNumber: string;
-};
+  id: number
+  firstName: string
+  lastName: string
+  email: string
+  mobileNumber: string
+}
 
-const agents = ref<Agent[]>([]);
-const search = ref('');
-const confirmDialog = ref(false);
-const editDialog = ref(false);
-const selectedAgentId = ref<number | null>(null);
+const agents = ref<Agent[]>([])
+const search = ref('')
+const confirmDialog = ref(false)
+const editDialog = ref(false)
+const addDialog = ref(false)
+const selectedAgentId = ref<number | null>(null)
 
 const snackbar = ref({
   show: false,
   text: '',
   color: 'success',
-});
+})
 
-const editForm = ref<Partial<Agent>>({});
+const addForm = ref<Partial<Agent>>({
+  firstName: '',
+  lastName: '',
+  email: '',
+  mobileNumber: '',
+})
+
+const editForm = ref<Partial<Agent>>({})
 
 const headers = [
   { title: 'ID', key: 'id' },
@@ -99,80 +137,97 @@ const headers = [
   { title: 'Email', key: 'email' },
   { title: 'Mobile', key: 'mobileNumber' },
   { title: 'Actions', key: 'actions', sortable: false },
-];
+]
 
 const fetchAgents = async () => {
   try {
-    const res = await fetch('http://localhost:3000/agents');
-    agents.value = await res.json();
+    const res = await fetch('http://localhost:3000/agents')
+    agents.value = await res.json()
   } catch {
-    snackbar.value = { show: true, text: 'Failed to fetch agents', color: 'error' };
+    snackbar.value = { show: true, text: 'Failed to fetch agents', color: 'error' }
   }
-};
+}
 
-onMounted(fetchAgents);
+onMounted(fetchAgents)
 
 const filteredAgents = computed(() =>
   agents.value.filter((a) =>
-    `${a.firstName} ${a.lastName} ${a.email} ${a.mobileNumber}`
-      .toLowerCase()
-      .includes(search.value.toLowerCase())
+    `${a.firstName} ${a.lastName} ${a.email} ${a.mobileNumber}`.toLowerCase().includes(search.value.toLowerCase())
   )
-);
+)
 
-// Open edit modal and fill form
+// ADD AGENT
+const submitAdd = async () => {
+  try {
+    const res = await fetch('http://localhost:3000/agents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(addForm.value),
+    })
+
+    if (!res.ok) throw new Error()
+
+    snackbar.value = { show: true, text: 'Agent added successfully!', color: 'success' }
+    addDialog.value = false
+    addForm.value = {}
+    await fetchAgents()
+  } catch {
+    snackbar.value = { show: true, text: 'Failed to add agent', color: 'error' }
+  }
+}
+
+// EDIT AGENT
 const openEditModal = (agent: Agent) => {
-  editForm.value = { ...agent };
-  selectedAgentId.value = agent.id;
-  editDialog.value = true;
-};
+  editForm.value = { ...agent }
+  selectedAgentId.value = agent.id
+  editDialog.value = true
+}
 
-// Submit edit
 const submitEdit = async () => {
-  if (!selectedAgentId.value) return;
+  if (!selectedAgentId.value) return
 
   try {
     const res = await fetch(`http://localhost:3000/agents/${selectedAgentId.value}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editForm.value),
-    });
+    })
 
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error()
 
-    snackbar.value = { show: true, text: 'Agent updated successfully!', color: 'success' };
-    await fetchAgents();
-    editDialog.value = false;
+    snackbar.value = { show: true, text: 'Agent updated successfully!', color: 'success' }
+    await fetchAgents()
+    editDialog.value = false
   } catch {
-    snackbar.value = { show: true, text: 'Failed to update agent', color: 'error' };
+    snackbar.value = { show: true, text: 'Failed to update agent', color: 'error' }
   }
-};
+}
 
-// Delete logic
+// DELETE AGENT
 const openDeleteDialog = (id: number) => {
-  selectedAgentId.value = id;
-  confirmDialog.value = true;
-};
+  selectedAgentId.value = id
+  confirmDialog.value = true
+}
 
 const confirmDeleteAgent = async () => {
-  if (!selectedAgentId.value) return;
+  if (!selectedAgentId.value) return
 
   try {
     const res = await fetch(`http://localhost:3000/agents/${selectedAgentId.value}`, {
       method: 'DELETE',
-    });
+    })
 
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error()
 
-    snackbar.value = { show: true, text: 'Agent deleted!', color: 'success' };
-    await fetchAgents();
+    snackbar.value = { show: true, text: 'Agent deleted!', color: 'success' }
+    await fetchAgents()
   } catch {
-    snackbar.value = { show: true, text: 'Failed to delete agent', color: 'error' };
+    snackbar.value = { show: true, text: 'Failed to delete agent', color: 'error' }
   } finally {
-    confirmDialog.value = false;
-    selectedAgentId.value = null;
+    confirmDialog.value = false
+    selectedAgentId.value = null
   }
-};
+}
 </script>
 
 <style scoped>
