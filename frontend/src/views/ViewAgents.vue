@@ -49,7 +49,14 @@
           <v-text-field v-model="addForm.firstName" label="First Name" />
           <v-text-field v-model="addForm.lastName" label="Last Name" />
           <v-text-field v-model="addForm.email" label="Email" />
-          <v-text-field v-model="addForm.mobileNumber" label="Mobile Number" />
+          <v-text-field 
+            v-model="addForm.mobileNumber" 
+            label="Mobile Number"
+            :rules="[
+                v => !!v || 'Mobile number is required',
+                v => /^\d{10,15}$/.test(v) || 'Enter a valid mobile number (10–15 digits)'
+                ]" 
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -67,7 +74,14 @@
           <v-text-field v-model="editForm.firstName" label="First Name" />
           <v-text-field v-model="editForm.lastName" label="Last Name" />
           <v-text-field v-model="editForm.email" label="Email" />
-          <v-text-field v-model="editForm.mobileNumber" label="Mobile Number" />
+          <v-text-field 
+            v-model="editForm.mobileNumber" 
+            label="Mobile Number"
+            :rules="[
+                v => !!v || 'Mobile number is required',
+                v => /^\d{10,15}$/.test(v) || 'Enter a valid mobile number (10–15 digits)'
+                ]"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />

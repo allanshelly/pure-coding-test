@@ -1,5 +1,128 @@
 # Fullstack Developer Take-home Coding Test
 
+## Setup Instructions
+
+### Backend
+
+Prerequisites: Node.js ≥ 18, NPM ≥ 9  
+1. Navigate to the backend directory:   
+`cd backend`  
+2. Install dependencies:  
+`npm install`  
+3. Generate Prisma client:   
+`npx prisma generate`  
+4. Run database migration (if applicable):   
+`npx prisma migrate dev --name init`  
+5. Seed the database (optional):   
+`npx prisma db seed`  
+> ⚠️ Make sure your `.env` file exists at the root of the backend project and includes:   
+> `DATABASE_URL="file:./dev.db"`  
+6. Start the development server:   
+`npm run dev`  
+Backend runs at: http://localhost:3000
+
+### Frontend
+
+Prerequisites: Node.js ≥ 18, NPM ≥ 9  
+1. Navigate to the frontend directory:   
+ `cd frontend`  
+2. Install dependencies:  
+`npm install`  
+3. Run the development server:  
+`npm run dev`  
+Frontend runs at: http://localhost:5173
+
+## Relational Data Model
+
+### PropertyAgent
+
+* `id`: Int — Primary Key, Auto Increment
+* `firstName`: String — Required
+* `lastName`: String — Required
+* `email`: String — Unique, Required
+* `mobileNumber`: String — Required
+* `createdAt`: DateTime — Default: now()
+* `updatedAt`: DateTime — Auto-updated on change
+
+**Relationships:**
+
+* Has many `Property`
+
+---
+
+### Property
+
+* `id`: Int — Primary Key, Auto Increment
+* `address`: String — Required
+* `agentId`: Int — Foreign Key → PropertyAgent.id
+
+**Relationships:**
+
+* Belongs to `PropertyAgent`
+* Has many `Tenant`
+* Has many `Note`
+* Has many `Reminder`
+
+---
+
+### Tenant
+
+* `id`: Int — Primary Key, Auto Increment
+* `name`: String — Required
+* `email`: String — Required
+* `phone`: String — Required
+* `propertyId`: Int — Foreign Key → Property.id
+
+**Relationships:**
+
+* Belongs to `Property`
+
+---
+
+### Note
+
+* `id`: Int — Primary Key, Auto Increment
+* `content`: String — Required
+* `createdAt`: DateTime — Default: now()
+* `propertyId`: Int — Foreign Key → Property.id
+
+**Relationships:**
+
+* Belongs to `Property`
+
+---
+
+### Reminder
+
+* `id`: Int — Primary Key, Auto Increment
+* `description`: String — Required
+* `dueDate`: DateTime — Required
+* `completed`: Boolean — Default: false
+* `propertyId`: Int — Foreign Key → Property.id
+
+**Relationships:**
+
+* Belongs to `Property`
+
+---
+
+### Text-Based ER Diagram
+
+```
+PropertyAgent
+    └───┬─── has many
+        │
+     Property
+      ├───┬─── has many
+      │   │
+      │   ├───▶ Tenant
+      │
+      ├───▶ Note
+      │
+      └───▶ Reminder
+```
+
+
 ## 1. Application Description
 
 Consider a simple application with one entity named **Property Agent**, who handles multiple **Rental Properties**.

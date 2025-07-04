@@ -5,7 +5,7 @@ import {
   createAgent,
   updateAgent,
   deleteAgent
-} from '../controllers/agent.controller';
+} from '../controllers/agent.controller.memory';
 
 const router = Router();
 
