@@ -31,6 +31,13 @@
       :items-per-page="10"
       class="elevation-1"
     >
+        <template #item.createdAt="{ item }">
+            {{ formatDate(item.createdAt) }}
+        </template>
+
+        <template #item.updatedAt="{ item }">
+            {{ formatDate(item.updatedAt) }}
+        </template>
       <template #item.actions="{ item }">
         <v-btn icon size="small" color="primary" @click="openEditModal(item)">
           <v-icon size="20">mdi-pencil</v-icon>
@@ -46,17 +53,12 @@
       <v-card>
         <v-card-title>Add Agent</v-card-title>
         <v-card-text>
-          <v-text-field v-model="addForm.firstName" label="First Name" />
-          <v-text-field v-model="addForm.lastName" label="Last Name" />
-          <v-text-field v-model="addForm.email" label="Email" />
-          <v-text-field 
-            v-model="addForm.mobileNumber" 
-            label="Mobile Number"
-            :rules="[
-                v => !!v || 'Mobile number is required',
-                v => /^\d{10,15}$/.test(v) || 'Enter a valid mobile number (10–15 digits)'
-                ]" 
-          />
+            <v-form ref="addFormRef" v-model="formValid">
+                <v-text-field v-model="addForm.firstName" label="First Name" />
+                <v-text-field v-model="addForm.lastName" label="Last Name" />
+                <v-text-field v-model="addForm.email" label="Email" :rules="emailRules" />
+                <v-text-field v-model="addForm.mobileNumber" label="Mobile Number" :rules="mobileRules" />
+            </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -71,22 +73,17 @@
       <v-card>
         <v-card-title>Edit Agent</v-card-title>
         <v-card-text>
-          <v-text-field v-model="editForm.firstName" label="First Name" />
-          <v-text-field v-model="editForm.lastName" label="Last Name" />
-          <v-text-field v-model="editForm.email" label="Email" />
-          <v-text-field 
-            v-model="editForm.mobileNumber" 
-            label="Mobile Number"
-            :rules="[
-                v => !!v || 'Mobile number is required',
-                v => /^\d{10,15}$/.test(v) || 'Enter a valid mobile number (10–15 digits)'
-                ]"
-          />
+            <v-form ref="addFormRef" v-model="formValid">
+                <v-text-field v-model="editForm.firstName" label="First Name" />
+                <v-text-field v-model="editForm.lastName" label="Last Name" />
+                <v-text-field v-model="editForm.email" label="Email" :rules="emailRules"/>
+                <v-text-field v-model="editForm.mobileNumber" label="Mobile Number" :rules="mobileRules"/>
+            </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="editDialog = false">Cancel</v-btn>
-          <v-btn color="primary" @click="submitEdit">Save</v-btn>
+          <v-btn color="primary" @click="submitEdit" :disabled="!formValid">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -150,6 +147,8 @@ const headers = [
   { title: 'Last Name', key: 'lastName' },
   { title: 'Email', key: 'email' },
   { title: 'Mobile', key: 'mobileNumber' },
+  { title: 'Created At', key: 'createdAt' },
+  { title: 'Updated At', key: 'updatedAt' },
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
@@ -172,23 +171,27 @@ const filteredAgents = computed(() =>
 
 // ADD AGENT
 const submitAdd = async () => {
+  const isValid = await addFormRef.value?.validate();
+  if (!isValid) return;
+
   try {
     const res = await fetch('http://localhost:3000/agents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(addForm.value),
-    })
+    });
 
-    if (!res.ok) throw new Error()
+    if (!res.ok) throw new Error();
 
-    snackbar.value = { show: true, text: 'Agent added successfully!', color: 'success' }
-    addDialog.value = false
-    addForm.value = {}
-    await fetchAgents()
+    snackbar.value = { show: true, text: 'Agent added successfully!', color: 'success' };
+    addDialog.value = false;
+    addForm.value = { firstName: '', lastName: '', email: '', mobileNumber: '' };
+    await fetchAgents();
   } catch {
-    snackbar.value = { show: true, text: 'Failed to add agent', color: 'error' }
+    snackbar.value = { show: true, text: 'Failed to add agent', color: 'error' };
   }
-}
+};
+
 
 // EDIT AGENT
 const openEditModal = (agent: Agent) => {
@@ -241,6 +244,42 @@ const confirmDeleteAgent = async () => {
     confirmDialog.value = false
     selectedAgentId.value = null
   }
+}
+
+const emailRules = [
+  (v: string) => !!v || 'Email is required',
+  (v: string) => /.+@.+\..+/.test(v) || 'Must be a valid email',
+  (v: string) => {
+    if (!v) return true;
+    const lower = v.toLowerCase();
+    const currentId = selectedAgentId.value;
+    const duplicate = agents.value.find(
+      agent => agent.email.toLowerCase() === lower && agent.id !== currentId
+    );
+    return !duplicate || 'Email already exists';
+  },
+];
+
+const mobileRules = [
+  (v: string) => !!v || 'Mobile number is required',
+  (v: string) => /^\d{11}$/.test(v) || 'Must be 11 digits',
+  (v: string) => {
+    if (!v) return true;
+    const currentId = selectedAgentId.value;
+    const duplicate = agents.value.find(
+      agent => agent.mobileNumber === v && agent.id !== currentId
+    );
+    return !duplicate || 'Mobile number already exists';
+  },
+];
+
+const addFormRef = ref();
+
+const formValid = ref(false);
+
+const formatDate = (value: string | Date) => {
+  const date = new Date(value)
+  return date.toLocaleString() // or .toLocaleDateString() for date only
 }
 </script>
 
