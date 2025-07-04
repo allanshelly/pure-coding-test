@@ -2,14 +2,16 @@ import { Request, Response } from 'express';
 import { prisma } from '../prisma';
 
 // Get all agents
-export const getAllAgents = async (_: Request, res: Response) => {
+export const getAllAgents = async (_: Request, res: Response): Promise<any> => {
   try {
     const agents = await prisma.propertyAgent.findMany();
-    res.json(agents);
+    return res.json(agents);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch agents' });
+    console.error('Error in getAllAgents:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 // Get agent by ID
 export const getAgentById = async (req: Request, res: Response): Promise<any> => {
@@ -41,44 +43,56 @@ export const getAgentById = async (req: Request, res: Response): Promise<any> =>
 export const createAgent = async (req: Request, res: Response): Promise<any> => {
   const { firstName, lastName, mobileNumber, email } = req.body;
 
+  if (!firstName || !lastName || !mobileNumber || !email) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
   try {
     const agent = await prisma.propertyAgent.create({
       data: { firstName, lastName, mobileNumber, email }
     });
-    res.status(201).json(agent);
+    return res.status(201).json(agent);
   } catch (error) {
-    res.status(400).json({ error: 'Failed to create agent', details: error });
+    console.error('Error in createAgent:', error);
+    return res.status(400).json({ message: 'Failed to create agent' });
   }
 };
 
 // Update agent
 export const updateAgent = async (req: Request, res: Response): Promise<any> => {
-  const id = Number(req.params.id);
+  const id = parseInt(req.params.id, 10);
   const { firstName, lastName, mobileNumber, email } = req.body;
 
-  if (isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
+  if (isNaN(id)) {
+    return res.status(400).json({ message: 'Invalid agent ID' });
+  }
 
   try {
     const agent = await prisma.propertyAgent.update({
       where: { id },
       data: { firstName, lastName, mobileNumber, email }
     });
-    res.json(agent);
+    return res.json(agent);
   } catch (error) {
-    res.status(400).json({ error: 'Failed to update agent', details: error });
+    console.error('Error in updateAgent:', error);
+    return res.status(400).json({ message: 'Failed to update agent' });
   }
 };
 
+
 // Delete agent
 export const deleteAgent = async (req: Request, res: Response): Promise<any> => {
-  const id = Number(req.params.id);
+  const id = parseInt(req.params.id, 10);
 
-  if (isNaN(id)) return res.status(400).json({ message: 'Invalid ID' });
+  if (isNaN(id)) {
+    return res.status(400).json({ message: 'Invalid agent ID' });
+  }
 
   try {
     await prisma.propertyAgent.delete({ where: { id } });
-    res.status(204).end();
+    return res.status(204).send();
   } catch (error) {
-    res.status(400).json({ error: 'Failed to delete agent', details: error });
+    console.error('Error in deleteAgent:', error);
+    return res.status(400).json({ message: 'Failed to delete agent' });
   }
 };
