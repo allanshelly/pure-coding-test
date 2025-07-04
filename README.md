@@ -15,7 +15,7 @@ Prerequisites: Node.js ≥ 18, NPM ≥ 9
 `npx prisma migrate dev --name init`  
 5. Seed the database (optional):   
 `npx prisma db seed`  
-> ⚠️ Make sure your `.env` file exists at the root of the backend project and includes:   
+> Make sure your `.env` file exists at the root of the backend project and includes:   
 > `DATABASE_URL="file:./dev.db"`  
 6. In `backend/src/routes/agents.routes.ts` change `'../controllers/agent.controller.memory'`  to `'../controllers/agent.controller'` in line 8
 7. Start the development server:   
